@@ -43,6 +43,35 @@ export default class BeatmapHashComputer {
     }
   }
 
+  public static async getFolderHash(
+    folderPath: string
+  ): Promise<string | undefined> {
+    if (folderPath == null) {
+      return undefined;
+    }
+    try {
+      const files = await fs.readdir(folderPath);
+      const modified = await Promise.all(
+        files
+          .filter((f: string) => f.toLowerCase().endsWith(".dat"))
+          .sort()
+          .map(async (f: string) => {
+            const fstat = await fs.stat(path.join(folderPath, f));
+            return fstat.mtime.getTime();
+          })
+      );
+
+      return crypto
+        .createHash("sha1")
+        .update(new Float64Array(modified))
+        .digest("hex")
+        .toUpperCase();
+    } catch (error) {
+      console.warn(`Get folder hash failed: ${folderPath}`, error);
+      return undefined;
+    }
+  }
+
   public static getFolderNameHash(folderPath: string) {
     if (folderPath == null) {
       return undefined;

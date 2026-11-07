@@ -79,11 +79,11 @@ export default class BeatmapLoader {
     this.beatmap.folderNameHash = BeatmapHashComputer.getFolderNameHash(
       this.beatmapFolder
     );
+    this.beatmap.folderHash = await BeatmapHashComputer.getFolderHash(
+      this.beatmapFolder
+    );
 
     try {
-      const fstat = await fs.stat(this.beatmapFolder);
-      this.beatmap.modified = fstat.mtime.toISOString();
-
       const infoDatPath = path.join(this.beatmapFolder, "info.dat");
       const infoDat = await fs.readFile(infoDatPath);
 

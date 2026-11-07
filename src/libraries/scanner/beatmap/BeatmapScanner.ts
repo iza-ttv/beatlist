@@ -1,4 +1,3 @@
-import fs from "fs-extra";
 import BeatSaber from "@/libraries/os/beatSaber/BeatSaber";
 import {
   computeDifferenceBySet,
@@ -21,6 +20,7 @@ import {
 import { BeatmapLocal } from "@/libraries/beatmap/BeatmapLocal";
 import BeatmapLoader from "@/libraries/beatmap/BeatmapLoader";
 import BeatmapLibrary from "@/libraries/beatmap/BeatmapLibrary";
+import BeatmapHashComputer from "@/libraries/beatmap/BeatmapHashComputer";
 import Logger from "@/libraries/helper/Logger";
 
 export default class BeatmapScanner implements ScannerInterface<BeatmapLocal> {
@@ -54,7 +54,7 @@ export default class BeatmapScanner implements ScannerInterface<BeatmapLocal> {
           "BeatmapScanner"
         );
         // Check for modified folders, treat as added
-        await BeatmapScanner.checkForChange(diff);
+        await BeatmapScanner.checkFolderHashes(diff);
       }
 
       this.result.removedItems = diff.removed.length;
@@ -162,16 +162,12 @@ export default class BeatmapScanner implements ScannerInterface<BeatmapLocal> {
     return computeDifferenceBySet(oldPathSet, currentPathSet);
   }
 
-  private static async checkForChange(diff: Differences<string>) {
+  private static async checkFolderHashes(diff: Differences<string>) {
     const modifiedPathSet = new Set<string>();
     for (const beatmap of BeatmapLibrary.GetAllMaps()) {
-      try {
-        const fstat = await fs.stat(beatmap.folderPath);
-        if (!beatmap.modified || beatmap.modified < fstat.mtime.toISOString())
-          modifiedPathSet.add(beatmap.folderPath.toLowerCase());
-      } catch (e) {
-        console.warn(e); // No file, etc
-      }
+      const folderHash = await BeatmapHashComputer.getFolderHash(beatmap.folderPath);
+      if (beatmap.folderHash !== folderHash)
+        modifiedPathSet.add(beatmap.folderPath.toLowerCase());
     }
     // Treat modified folders as added
     diff.added = diff.added.concat(

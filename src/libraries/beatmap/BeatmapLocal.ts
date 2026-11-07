@@ -6,8 +6,8 @@ export interface BeatmapLocal {
   songPath: string;
   hash: string | undefined;
   folderNameHash: string | undefined;
+  folderHash: string | undefined;
   downloaded: string;
-  modified: string | undefined;
   loadState: BeatmapLoadState;
 }
 
