@@ -5,13 +5,15 @@ import localForage from "localforage";
 import pathify from "@/plugins/pathify";
 import modules, { StoreState } from "@/store";
 
+const isDevelopment = process.env.NODE_ENV !== "production";
+
 Vue.use(Vuex);
 
 const vuexLocalCachedData = new VuexPersistence<StoreState>({
   key: "vuex-cached-data",
   storage: localForage as AsyncStorage,
   asyncStorage: true,
-  strictMode: true,
+  strictMode: isDevelopment,
   reducer: (state) => ({
     // beatmap: state.beatmap,
     beatmap: {
@@ -36,7 +38,7 @@ const vuexLocalMain = new VuexPersistence<StoreState>({
   key: "vuex-main",
   storage: localForage as AsyncStorage,
   asyncStorage: true,
-  strictMode: true,
+  strictMode: isDevelopment,
   reducer: (state) => ({
     settings: state.settings,
     modal: state.modal,
@@ -49,7 +51,7 @@ const store = new Vuex.Store<StoreState>({
   mutations: {
     RESTORE_MUTATION: vuexLocalMain.RESTORE_MUTATION,
   },
-  strict: true,
+  strict: isDevelopment,
 });
 
 export default store as typeof store & { restored: Promise<void> };
