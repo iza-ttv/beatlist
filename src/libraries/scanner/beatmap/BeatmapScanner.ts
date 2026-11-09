@@ -54,7 +54,7 @@ export default class BeatmapScanner implements ScannerInterface<BeatmapLocal> {
           "BeatmapScanner"
         );
         // Check for modified folders, treat as added
-        await BeatmapScanner.checkFolderHashes(diff);
+        await BeatmapScanner.checkFolderHashes(diff, progress);
       }
 
       this.result.removedItems = diff.removed.length;
@@ -62,6 +62,7 @@ export default class BeatmapScanner implements ScannerInterface<BeatmapLocal> {
       diff.removed = []; // 件数しか使用しないので早めに破棄
 
       progress.setTotal(diff.added.length + retryTargetItems.length);
+      progress.set(0);
 
       // 追加された曲
       this.result.newItems = [];
@@ -162,18 +163,36 @@ export default class BeatmapScanner implements ScannerInterface<BeatmapLocal> {
     return computeDifferenceBySet(oldPathSet, currentPathSet);
   }
 
-  private static async checkFolderHashes(diff: Differences<string>) {
+  private static async checkFolderHashes(
+    diff: Differences<string>,
+    progress: Progress
+  ) {
+    Logger.debug(`start checkFolderHashes`, "BeatmapScanner");
+    const beatmaps = BeatmapLibrary.GetAllMaps();
     const modifiedPathSet = new Set<string>();
-    for (const beatmap of BeatmapLibrary.GetAllMaps()) {
-      const folderHash = await BeatmapHashComputer.getFolderHash(beatmap.folderPath);
+
+    progress.setTotal(beatmaps.length);
+    progress.set(0);
+    let done = 0;
+
+    for (const beatmap of beatmaps) {
+      const folderHash = await BeatmapHashComputer.getFolderHash(
+        beatmap.folderPath
+      );
       if (beatmap.folderHash !== folderHash)
         modifiedPathSet.add(beatmap.folderPath.toLowerCase());
+      // Throttle progress events
+      if (++done % 200 === 0)
+        progress.set(done);
     }
+    progress.set(done);
+
     // Treat modified folders as added
     diff.added = diff.added.concat(
       diff.kept.filter((value) => modifiedPathSet.has(value))
     );
     diff.kept = diff.kept.filter((value) => !modifiedPathSet.has(value));
+    Logger.debug(`end   checkFolderHashes`, "BeatmapScanner");
   }
 
   //   private ReassembleAllBeatmap(diff: Differences<string>): BeatmapLocal[] {

@@ -1,6 +1,6 @@
 import events from "events";
 
-export const ON_PLUS_ONE = "plusOne";
+export const ON_CHANGE = "change";
 export const ON_TOTAL_CHANGE = "totalChange";
 
 export interface ProgressInterface {
@@ -16,8 +16,14 @@ export default class Progress implements ProgressInterface {
   private _eventEmitter: events.EventEmitter = new events.EventEmitter();
 
   public plusOne() {
-    this._done += 1;
-    this._eventEmitter.emit(ON_PLUS_ONE, this._done);
+    this.set(this._done + 1);
+  }
+
+  public set(done: number) {
+    if (done >= 0) {
+      this._done = done;
+      this._eventEmitter.emit(ON_CHANGE, this._done);
+    }
   }
 
   public setTotal(total: number) {
@@ -46,11 +52,11 @@ export default class Progress implements ProgressInterface {
     this._eventEmitter.on(event, listener);
   }
 
-  public onPlusOne(callback: () => void) {
-    this._eventEmitter.on(ON_PLUS_ONE, callback);
+  public onChange(callback: () => void) {
+    this._eventEmitter.on(ON_CHANGE, callback);
   }
 
-  public offPlusOne(callback: () => void) {
-    this._eventEmitter.off(ON_PLUS_ONE, callback);
+  public offChange(callback: () => void) {
+    this._eventEmitter.off(ON_CHANGE, callback);
   }
 }

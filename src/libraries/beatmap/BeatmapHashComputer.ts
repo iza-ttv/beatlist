@@ -57,7 +57,7 @@ export default class BeatmapHashComputer {
           .sort()
           .map(async (f: string) => {
             const fstat = await fs.stat(path.join(folderPath, f));
-            return fstat.mtime.getTime();
+            return fstat.mtimeMs;
           })
       );
 

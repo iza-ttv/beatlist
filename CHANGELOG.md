@@ -1,7 +1,7 @@
 # Changelog
 
 ## v1.5.7  (2026-11-07)
- - Significantly improved scan performance
+ - Fixed freezes during scan
  - Detect modified folders more reliably
 
 ## v1.5.6  (2026-07-18)

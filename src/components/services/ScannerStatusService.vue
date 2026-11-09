@@ -16,7 +16,7 @@
           }}
         </p>
         <v-progress-linear
-          :indeterminate="progress.beatmap === undefined"
+          :indeterminate="progress.beatmap.get().total === 0"
           :value="progress.beatmap.getRatio() * 100"
           color="success"
           rounded
@@ -33,7 +33,7 @@
           }}
         </p>
         <v-progress-linear
-          :indeterminate="progress.playlist === undefined"
+          :indeterminate="progress.playlist.get().total === 0"
           :value="progress.playlist.getRatio() * 100"
           color="success"
           rounded
@@ -115,12 +115,12 @@ export default Vue.extend({
     onScanCompleted(): void {
       this.dialog = false;
       this.preparing = false;
-      ScannerService.beatmapProgress.offPlusOne(this.updateProgress);
-      ScannerService.playlistProgress.offPlusOne(this.updateProgress);
+      ScannerService.beatmapProgress.offChange(this.updateProgress);
+      ScannerService.playlistProgress.offChange(this.updateProgress);
     },
     updateProgressListener(): void {
-      ScannerService.beatmapProgress.onPlusOne(this.updateProgress);
-      ScannerService.playlistProgress.onPlusOne(this.updateProgress);
+      ScannerService.beatmapProgress.onChange(this.updateProgress);
+      ScannerService.playlistProgress.onChange(this.updateProgress);
     },
     updateProgress(): void {
       this.progress.beatmap = ScannerService.beatmapProgress;

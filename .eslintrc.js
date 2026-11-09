@@ -34,6 +34,7 @@ module.exports = {
     // "@typescript-eslint/no-floating-promises": ["warn"],
     "vue/multi-word-component-names": "off",
     "no-unused-vars": "off",
+    "no-plusplus": "off",
     "no-await-in-loop": "warn",
     "no-shadow": "off",
     "@typescript-eslint/no-shadow": "warn",

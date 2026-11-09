@@ -1,9 +1,11 @@
 import Progress, {
-  ON_PLUS_ONE,
+  ON_CHANGE,
   ON_TOTAL_CHANGE,
   ProgressInterface,
 } from "@/libraries/common/Progress";
 import events from "events";
+
+const sum = (previous: number, current: number) => previous + current;
 
 export default class ProgressGroup implements ProgressInterface {
   private _progresses: Progress[] = [];
@@ -17,7 +19,7 @@ export default class ProgressGroup implements ProgressInterface {
   public AddProgresses(...progresses: Progress[]) {
     progresses.forEach((progress: Progress) => {
       this._progresses.push(progress);
-      progress.on(ON_PLUS_ONE, () => this.plusOne());
+      progress.on(ON_CHANGE, () => this.computeDone());
       progress.on(ON_TOTAL_CHANGE, () => this.computeTotal());
     });
 
@@ -39,17 +41,20 @@ export default class ProgressGroup implements ProgressInterface {
     return this._done / this._total;
   }
 
-  private plusOne() {
-    this._done += 1;
-    this._eventEmitter.emit(ON_PLUS_ONE, this._done);
+  private computeDone() {
+    this._done = this._progresses
+      .map((p: Progress) => p.get().done)
+      .reduce(sum, 0);
+
+    this._eventEmitter.emit(ON_CHANGE, this._done);
   }
 
   private computeTotal() {
-    const sum = (previous: number, current: number) => previous + current;
-
     this._total = this._progresses
       .map((p: Progress) => p.get().total)
       .reduce(sum, 0);
+
+    this._eventEmitter.emit(ON_TOTAL_CHANGE, this._total);
   }
 
   public getNewOne(): Progress {
@@ -58,11 +63,11 @@ export default class ProgressGroup implements ProgressInterface {
     return progress;
   }
 
-  public onPlusOne(callback: () => void) {
-    this._eventEmitter.on(ON_PLUS_ONE, callback);
+  public onChange(callback: () => void) {
+    this._eventEmitter.on(ON_CHANGE, callback);
   }
 
-  public offPlusOne(callback: () => void) {
-    this._eventEmitter.off(ON_PLUS_ONE, callback);
+  public offChange(callback: () => void) {
+    this._eventEmitter.off(ON_CHANGE, callback);
   }
 }
