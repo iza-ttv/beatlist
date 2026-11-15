@@ -36,6 +36,7 @@ module.exports = {
     "no-unused-vars": "off",
     "no-plusplus": "off",
     "no-await-in-loop": "warn",
+    "no-loop-func": "warn",
     "no-shadow": "off",
     "@typescript-eslint/no-shadow": "warn",
     "vue/no-v-html": "off",

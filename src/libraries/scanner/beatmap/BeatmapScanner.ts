@@ -175,15 +175,25 @@ export default class BeatmapScanner implements ScannerInterface<BeatmapLocal> {
     progress.set(0);
     let done = 0;
 
-    for (const beatmap of beatmaps) {
-      const folderHash = await BeatmapHashComputer.getFolderHash(
-        beatmap.folderPath
+    const chunks: BeatmapLocal[][] = [];
+    const chunkSize = 20;
+    for (let i = 0; i < beatmaps.length; i += chunkSize) {
+      chunks.push(beatmaps.slice(i, i + chunkSize));
+    }
+
+    for (const chunk of chunks) {
+      await Promise.all(
+        chunk.map((beatmap) =>
+          BeatmapHashComputer.getFolderHash(beatmap.folderPath).then(
+            (folderHash) => {
+              if (beatmap.folderHash !== folderHash)
+                modifiedPathSet.add(beatmap.folderPath.toLowerCase());
+              // Throttle progress events
+              if (++done % 500 === 0) progress.set(done);
+            }
+          )
+        )
       );
-      if (beatmap.folderHash !== folderHash)
-        modifiedPathSet.add(beatmap.folderPath.toLowerCase());
-      // Throttle progress events
-      if (++done % 200 === 0)
-        progress.set(done);
     }
     progress.set(done);
 

@@ -145,9 +145,10 @@ const mutations = {
     context: BeatmapStoreState,
     payload: { hash: string; item: BeatsaverItemValid }
   ) {
-    context.beatsaverCached.set(payload.hash.toUpperCase(), payload.item);
+    const hash = payload.item.beatmap.key.toUpperCase();
+    context.beatsaverCached.set(hash, payload.item);
     context.beatsaverKeyToHashIndex.set(
-      payload.item.beatmap.key.toUpperCase(),
+      hash,
       payload.item.beatmap.hash.toUpperCase()
     );
     context.beatsaverCacheUpdated = new Date();
@@ -164,12 +165,10 @@ const mutations = {
     for (const item of payload.items) {
       if (item.item.beatmap) {
         // 値あり
-        context.beatsaverCached.set(
-          item.item.beatmap.hash.toUpperCase(),
-          item.item
-        );
+        const hash = item.item.beatmap.hash.toUpperCase();
+        context.beatsaverCached.set(hash, item.item);
         context.beatsaverKeyToHashIndex.set(
-          item.item.beatmap.key.toUpperCase(),
+          hash,
           item.item.beatmap.hash.toUpperCase()
         );
       } else {
